@@ -5,7 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="08ed84fd-bfd2-44b2-8ff4-22204abea973" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Final Project/code/Play Blokus.py" afterPath="$PROJECT_DIR$/Final Project/code/Play Blokus.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Decoder.xls" afterPath="$PROJECT_DIR$/Decoder.xls" />
     </list>
     <ignored path="blokus_solver.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -377,7 +377,7 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
-    <editor active="true" />
+    <editor active="false" />
     <layout>
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32925472" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="-1" side_tool="true" content_ui="tabs" />
