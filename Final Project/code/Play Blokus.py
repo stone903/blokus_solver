@@ -193,7 +193,7 @@ class Shape(object):
 
 class I1(Shape):
     def __init__(self):
-        self.ID = "I1"
+        self.ID = "101"
         self.size = 1
     def set_points(self, x, y):
         self.points = [(x, y)]
@@ -201,7 +201,7 @@ class I1(Shape):
 
 class I2(Shape):
     def __init__(self):
-        self.ID = "I2"
+        self.ID = "201"
         self.size = 2
     def set_points(self, x, y):
         self.points = [(x, y), (x, y + 1)]
@@ -635,12 +635,12 @@ class Player:
         
         return placements
     
-    def do_move(self, game):
+    def do_move(self, game, moveShape, movePoints):
         """
         Generates a move according to the Player's
         strategy and current state of the board.
         """
-        return self.strategy(self, game)
+        return self.strategy(self, game, moveShape, movePoints)
 
 # <headingcell level=4>
 
@@ -703,7 +703,7 @@ class Game:
         """
         return(True)
     
-    def play(self):
+    def play(self, playerID, moveShape, movePoints):
         """
         Plays a list of Player objects sequentially,
         as long as the game has not been won yet,
@@ -715,7 +715,7 @@ class Game:
             # give the players their pieces and a corner to start.
             max_x = ((self.board).size[1] - 1)
             max_y = ((self.board).size[0] - 1)
-            starts = [(0, 0), (max_y, max_x), (0, max_x), (max_y, 0)]
+            starts = [(0, 0), (0, max_x), (max_y, 0), (max_y, max_x)]
             
             for i in xrange(len(self.players)):
                 (self.players[i]).add_pieces(self.all_pieces)
@@ -724,9 +724,9 @@ class Game:
         # if there is no winner, print out the current player's name and
         # let current player perform a move
         if self.winner() == "None":
-            current = self.players[0]
+            current = self.players[playerID]
             print "Current player: " + current.name
-            proposal = current.do_move(self)
+            proposal = current.do_move(self, moveShape, movePoints)
             if proposal == None:
                 # move on to next player, increment rounds
                 first = (self.players).pop(0)
@@ -742,9 +742,6 @@ class Game:
                 current.update_player(proposal, self.board)
                 # remove the piece that was played from the player
                 current.remove_piece(proposal)
-                # place the player at the back of the queue
-                first = (self.players).pop(0)
-                self.players = self.players + [first]
                 # increment the number of rounds just played
                 self.rounds += 1
             
@@ -1149,21 +1146,10 @@ def Minimax_Player(player, game, weights):
 
 # <codecell>
 
-def User_Player(player, game):
+def User_Player(player, game, moveShape, movePoints):
     """
     User Player should input 2 things: piece and coordinate for the refpt.
     """
-    def get_input():
-        s = True
-        while s:
-            try:
-                s = map(int, raw_input("Please input a reference point: ").split())
-                while len(s) != 2:
-                    s = map(int, raw_input("Please input a valid reference point (x,y): ").split())
-                else: return s  
-            except:
-                print "Invalid coordinate input."
-                s = True
 
     if player.pieces == []:
         print "\nSorry! You can't play any more moves since you have placed all your pieces.\n"
@@ -1175,28 +1161,20 @@ def User_Player(player, game):
     if possibles == []:
         print "\nSorry! There are no more possible moves for you.\n"
         return None
-    
-    while options == []:
-        shape = (raw_input("Choose a shape: ")).upper().strip()
-        while not (shape in [p.ID for p in player.pieces]):
-            print ("\nPlease enter a valid piece ID. Remember these are the pieces available to you: "
-            + str([p.ID for p in player.pieces]) + "\n")
-            shape = (raw_input("Choose a shape: ")).upper()
-        
-        refpt = get_input()
-        while not game.board.in_bounds((refpt[0], refpt[1])):
-            print ("\nPlease enter a point that is in bounds. Remember the dimensions of the board: " + str(game.board.size) + "\n")
-            refpt = get_input()
-        while game.board.overlap([(refpt[0], refpt[1])]):
-            print "\nIt appears the point you chose overlaps with another piece! Please choose an empty square.\n"
-            refpt = get_input()
 
-        for piece in possibles:
-            if piece.ID == shape and piece.points[0][0] == refpt[0] and piece.points[0][1] == refpt[1]:
-                options.append(piece)
-        
-        if options == []:
-            print "\nOh no! It appears you have chosen an invalid shape and reference point combination. Please try again!\n"
+    shape = moveShape
+    if not (shape in [p.ID for p in player.pieces]):
+        print ("\nPlease enter a valid piece ID. Remember these are the pieces available to you: ")
+
+    for piece in possibles:
+        if piece.ID == shape :
+            for i in range(len(movePoints)):
+                piece.points[i] = movePoints[i]
+            options.append(piece)
+            break
+
+    if options == []:
+        print "\nOh no! It appears you have chosen an invalid shape and reference point combination. Please try again!\n"
     
     if len(options) == 1:
         return options[0]
@@ -1216,7 +1194,7 @@ def User_Player(player, game):
 # <codecell>
 
 # PLAYING INSTRUCTIONS
-
+'''
 print "\n \n Welcome to Blokus! \n \n \n Blokus is a geometrically abstract, strategy board game. It can be a two- or four-player game. Each player has 21 pieces of a different color. The two-player version of the board has 14 rows and 14 columns. \n \n You will be playing a two-player version against an algorithm of your choice: Random, Greedy, or Minimax. In case you need to review the rules of Blokus, please follow this link: http://en.wikipedia.org/wiki/Blokus. \n \n This is how choosing a move is going to work: after every turn, we will display the current state of the board, as well as the scores of each player and the pieces available to you. We have provided you with a map of the names of the pieces, as well as their reference points, denoted by red dots. When you would like to place a piece, we will prompt you for the name of the piece and the coordinate (column, row) of the reference point. If multiple placements are possible, we will let you choose which one you would like to play. \n \n Good luck! \n \n"
 
 img = Image.open('Images/Blokus_Tiles.png')
@@ -1235,43 +1213,33 @@ elif choice == "B":
     computer = Greedy("A", "Computer", Greedy_Player, [2, 1, 5, 1, 1])
 else:
     computer = Greedy("A", "Computer", Minimax_Player, [2, 1, 5, 1, 1])
+'''
 
-user = Player("B", "User", User_Player)
 
-standard_size = Board(14, 14, "_")
+user1 = Player("1", "Player1", User_Player)
+user2 = Player("2", "Player2", User_Player)
+user3 = Player("3", "Player3", User_Player)
+user4 = Player("4", "Player4", User_Player)
 
-ordering = [computer, user]
-random.shuffle(ordering)
+standard_size = Board(20, 20, "0")
+
+ordering = [user1, user2, user3, user4]
+
 userblokus = Blokus(ordering, standard_size, All_Shapes)
 
-# <codecell>
+playerID = 0
+moveShape = '201'
+movePoints = [(0,0),(0,1)]
 
+userblokus.play(playerID, moveShape, movePoints)
 userblokus.board.print_board(num = userblokus.rounds, fancy = False)
-print "\n"
-userblokus.play()
-userblokus.board.print_board(num = userblokus.rounds, fancy = False)
-print "\n"
 
-while userblokus.winner() == "None":
-    userblokus.play()
-    userblokus.board.print_board(num = userblokus.rounds, fancy = False)
-    print "\n"
-    for p in userblokus.players:
-        print p.name + " (" + str(p.score) + ") : " + str([s.ID for s in p.pieces])
-        print 
-    print "======================================================================="
+playerID = 1
+moveShape = "101"
+movePoints = [(0,19)]
 
-print 
-userblokus.board.print_board()
-print 
-userblokus.play()
+userblokus.play(playerID, moveShape, movePoints)
 
-print "The final scores are..."
-
-by_name = sorted(userblokus.players, key = lambda player: player.name)
-
-for p in by_name:
-    print p.name + " : " + str(p.score)
 
 
 
